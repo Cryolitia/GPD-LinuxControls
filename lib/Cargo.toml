@@ -1,0 +1,19 @@
+[package]
+name = "gpd_linuxcontrols"
+version = "0.1.0"
+edition = "2021"
+authors = ["Cryolitia <Cryolitia@gmail.com>"]
+description = "A reverse engineered and reference implementation of GPD WinControls"
+homepage = "https://github.com/Cryolitia/GPD-LinuxControls"
+repository = "https://github.com/Cryolitia/GPD-LinuxControls"
+license = "MIT"
+categories = ["hardware-support"]
+
+[dependencies]
+log = "0.4.20"
+num_enum = "0.7.2"
+rusb = "0.9.3"
+clap = "4.5.0"
+strum = { version = "0.26.1", features = ["strum_macros"] }
+strum_macros = "0.26.1"
+colored = "2.1.0"
