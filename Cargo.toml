@@ -4,4 +4,5 @@ resolver = "2"
 members = [
     "cli",
     "lib",
+    "serialize_display_adapter_macro_derive",
 ]

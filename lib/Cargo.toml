@@ -17,3 +17,8 @@ clap = "4.5.0"
 strum = { version = "0.26.1", features = ["strum_macros"] }
 strum_macros = "0.26.1"
 colored = "2.1.0"
+serde = { version = "1.0.196", features = ["derive"] }
+serde_json = "1.0.113"
+serialize_display_adapter_macro_derive = { path = "../serialize_display_adapter_macro_derive" }
+lazy_static = "1.4.0"
+regex = "1.10.3"

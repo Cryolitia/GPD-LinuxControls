@@ -1,5 +1,7 @@
 use clap::ValueEnum;
 use num_enum::{IntoPrimitive, TryFromPrimitive};
+use serde::{Deserialize, Serialize};
+use serialize_display_adapter_macro_derive::SerializeDisplayAdapter;
 
 pub mod hid_usage_id;
 
@@ -33,7 +35,8 @@ pub enum BackButton {
     Right4,
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, ValueEnum, Debug, TryFromPrimitive, IntoPrimitive, Default)]
+#[derive(Copy, Clone, PartialEq, Eq, ValueEnum, Debug, TryFromPrimitive, IntoPrimitive, Default, Serialize, Deserialize, SerializeDisplayAdapter)]
+#[serde(rename_all = "kebab-case")]
 #[repr(u8)]
 pub enum Vibrate {
     #[default]

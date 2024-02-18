@@ -1,4 +1,6 @@
-use std::fmt::{Debug, Formatter};
+use std::fmt::{Debug, format, Formatter};
+use serde::{Deserialize, Serialize, Serializer};
+use serialize_display_adapter_macro_derive::SerializeDisplayAdapter;
 use crate::controls_field::back_button::BackButtonConfig;
 use crate::controls_field::dead_zones::DeadZonesConfig;
 use crate::controls_field::keyboard_mouse::KeyboardMouseConfig;
@@ -9,7 +11,7 @@ pub mod back_button;
 pub mod dead_zones;
 pub mod hid_usage_id_u8;
 
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug, Serialize, SerializeDisplayAdapter)]
 pub struct ControlsField {
     pub firmware_version: FirmwareVersion,
     pub keyboard_mouse: KeyboardMouseConfig,
@@ -19,7 +21,7 @@ pub struct ControlsField {
     pub checksum: Checksum,
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug, SerializeDisplayAdapter)]
 pub struct Checksum {
     value: u64
 }
@@ -32,31 +34,34 @@ impl From<u64> for Checksum {
     }
 }
 
-impl Debug for Checksum {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:#X}", self.value)
+impl Serialize for Checksum {
+
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+        serializer.serialize_str(format!("{:#X}", self.value).as_str())
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Serialize, SerializeDisplayAdapter)]
 pub struct FirmwareVersion{
     pub gamepad_firmware: Version,
     pub keyboard_mouse_firmware: Version,
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug, SerializeDisplayAdapter)]
 pub struct Version {
     pub major_version: u8,
     pub minor_version: u8,
 }
 
-impl Debug for Version {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}.{}", self.major_version, self.minor_version)
+impl Serialize for Version {
+
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+        serializer.serialize_str(format!("{}.{}", self.major_version, self.minor_version).as_str())
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Copy, Clone, Debug, Default, Serialize, Deserialize, SerializeDisplayAdapter)]
+#[serde(default)]
 pub struct ControlsConfig {
     pub keyboard_mouse: KeyboardMouseConfig,
     pub back_button: BackButtonConfig,

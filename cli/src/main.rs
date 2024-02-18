@@ -1,9 +1,11 @@
-use std::fmt::Debug;
+use std::fmt::{Debug, Display};
+use std::fs::File;
+use std::io::Read;
+use std::path::Path;
 use std::process::exit;
 use clap::Parser;
 use log::{debug, error};
-use gpd_linuxcontrols::enums::hid_usage_id::HIDUsageID;
-use gpd_linuxcontrols::protocol::connect;
+use gpd_linuxcontrols::protocol::{connect, disconnect};
 use gpd_linuxcontrols::protocol::function::{read_all, read_checksum, read_config, read_firmware_version, save, write_config};
 use strum::IntoEnumIterator;
 use gpd_linuxcontrols::controls_field::back_button::BackButtonConfig;
@@ -25,52 +27,80 @@ fn main() {
     env_logger::Builder::new().filter_level(args.verbose.log_level_filter()).init();
     debug!("{args:?}");
 
+    if args.command == Commands::HIDUsageID {
+        gpd_linuxcontrols::enums::hid_usage_id::HIDUsageID::iter().for_each(|i| {
+            println!("{:32}{:#X}", i.to_string(), <gpd_linuxcontrols::enums::hid_usage_id::HIDUsageID as Into<u8>>::into(i))
+        });
+        exit(0);
+    }
+
     let device = connect().unwrap_or_else(|error| {
         error!("{}", error);
         exit(1);
     });
 
-    match args.command {
-        Commands::Read { read_command } => {
-            (|| -> Result<String, String> {
-                let result: Result<Box<dyn Debug>, String> = match read_command {
-                    ReadCommand::Firmware =>
-                        read_firmware_version(&device).map(|v| -> Box<dyn Debug> { Box::new(v) }),
-                    ReadCommand::Checksum =>
-                        read_checksum(&device).map(|v| -> Box<dyn Debug> { Box::new(v) }),
-                    other => {
-                        let config = read_all(&device)?;
-                        let result: Box<dyn Debug> = match other {
-                            ReadCommand::All => Box::new(config),
-                            ReadCommand::KeyboardMouse => Box::new(config.keyboard_mouse),
-                            ReadCommand::BackButton => Box::new(config.back_button),
-                            ReadCommand::Vibrate => Box::new(config.vibrate),
-                            ReadCommand::DeadZones => Box::new(config.dead_zones),
-                            ReadCommand::BackButtonDelay => Box::new(config.back_button),
-                            _ => panic!("Never reach!")
-                        };
-                        Ok(result)
-                    }
-                };
-                return result.map(|v| format!("{:#?}", v));
-            })().map_or_else(|e| {
-                error!("{}", e);
-                exit(1);
-            }, |v| {
-                println!("{}", v);
-                exit(0)
-            });
-        }
-        Commands::Write {
-            write_command,
-            force
-        } => {
-            (|| -> Result<(), String> {
+    let code = (|| -> Result<(), String> {
+        return match args.command {
+            Commands::Read { read_command } => {
+                return (|| -> Result<String, String> {
+                    let result: Result<Box<dyn Display>, String> = match read_command {
+                        ReadCommand::Firmware =>
+                            read_firmware_version(&device).map(|v| -> Box<dyn Display> { Box::new(v) }),
+                        ReadCommand::Checksum =>
+                            read_checksum(&device).map(|v| -> Box<dyn Display> { Box::new(v) }),
+                        other => {
+                            let config = read_all(&device)?;
+                            let result: Box<dyn Display> = match other {
+                                ReadCommand::All => Box::new(config),
+                                ReadCommand::Config => Box::<ControlsConfig>::new(config.into()),
+                                ReadCommand::KeyboardMouse => Box::new(config.keyboard_mouse),
+                                ReadCommand::BackButton => Box::new(config.back_button),
+                                ReadCommand::Vibrate => Box::new(config.vibrate),
+                                ReadCommand::DeadZones => Box::new(config.dead_zones),
+                                ReadCommand::BackButtonDelay => Box::new(config.back_button),
+                                _ => panic!("Never reach!")
+                            };
+                            Ok(result)
+                        }
+                    };
+                    return result.map(|v| v.to_string());
+                })().map(|v| {
+                    println!("{}", v);
+                    return ();
+                });
+            }
+            Commands::Write {
+                write_command,
+                force
+            } => {
                 let mut config = read_config(&device)?;
                 let validator = RangeValidator {
                     force
                 };
                 match write_command {
+                    WriteCommand::Config { args } => {
+                        let mut str: String = Default::default();
+                        args.json.inspect(|v| {
+                            str = v.to_owned();
+                        });
+                        args.file.map(|v| -> Result<(), String> {
+                            File::open(Path::new(&v)).map_err(|e| -> String { e.to_string() })?.read_to_string(&mut str).map_err(|e| -> String { e.to_string() })?;
+                            Ok(())
+                        }).unwrap_or(Ok(()))?;
+                        config = serde_json::from_str(&str).map_err(|e| -> String { e.to_string() })?;
+                        debug!("Deserialized: {}", config);
+                        validator.validate_dead_zones(config.dead_zones.left.border, "Left::Border")?;
+                        validator.validate_dead_zones(config.dead_zones.left.center, "Left::Border")?;
+                        validator.validate_dead_zones(config.dead_zones.right.border, "Right::Border")?;
+                        validator.validate_dead_zones(config.dead_zones.right.center, "Right::Border")?;
+
+                        validator.validate_delay(config.back_button.left.first_delay, "Left::First")?;
+                        validator.validate_delay(config.back_button.left.second_delay, "Left::Second")?;
+                        validator.validate_delay(config.back_button.left.third_delay, "Left::Third")?;
+                        validator.validate_delay(config.back_button.right.first_delay, "Right::First")?;
+                        validator.validate_delay(config.back_button.right.second_delay, "Right::Second")?;
+                        validator.validate_delay(config.back_button.right.third_delay, "Right::Third")?;
+                    }
                     WriteCommand::KeyboardMouse(args) => {
                         match args.key {
                             gpd_linuxcontrols::enums::KeyboardMouse::DPadUp => config.keyboard_mouse.directional_pad.up = args.value.into(),
@@ -104,37 +134,29 @@ fn main() {
                     WriteCommand::Vibrate(args) => config.vibrate = args.value,
                     WriteCommand::DeadZone(args) => {
                         match args.key {
-                            DeadZone::LeftCenter => config.dead_zones.left.center = validator.validate_dead_zones(args.value)?,
-                            DeadZone::LeftBorder => config.dead_zones.left.border = validator.validate_dead_zones(args.value)?,
-                            DeadZone::RightCenter => config.dead_zones.right.center = validator.validate_dead_zones(args.value)?,
-                            DeadZone::RightBorder => config.dead_zones.right.border = validator.validate_dead_zones(args.value)?,
+                            DeadZone::LeftCenter => config.dead_zones.left.center = validator.validate_dead_zones(args.value, "Left::Center")?,
+                            DeadZone::LeftBorder => config.dead_zones.left.border = validator.validate_dead_zones(args.value, "Left::Border")?,
+                            DeadZone::RightCenter => config.dead_zones.right.center = validator.validate_dead_zones(args.value, "Right::Center")?,
+                            DeadZone::RightBorder => config.dead_zones.right.border = validator.validate_dead_zones(args.value, "Right::Border")?,
                         }
                     }
                     WriteCommand::BackButtonDelay(args) => {
                         match args.key {
-                            gpd_linuxcontrols::enums::BackButtonDelay::Left1 => validator.validate_delay(args.value)?,
-                            gpd_linuxcontrols::enums::BackButtonDelay::Left2 => validator.validate_delay(args.value)?,
-                            gpd_linuxcontrols::enums::BackButtonDelay::Left3 => validator.validate_delay(args.value)?,
-                            gpd_linuxcontrols::enums::BackButtonDelay::Right1 => validator.validate_delay(args.value)?,
-                            gpd_linuxcontrols::enums::BackButtonDelay::Right2 => validator.validate_delay(args.value)?,
-                            gpd_linuxcontrols::enums::BackButtonDelay::Right3 => validator.validate_delay(args.value)?,
+                            gpd_linuxcontrols::enums::BackButtonDelay::Left1 => validator.validate_delay(args.value, "Left::First")?,
+                            gpd_linuxcontrols::enums::BackButtonDelay::Left2 => validator.validate_delay(args.value, "Left::Second")?,
+                            gpd_linuxcontrols::enums::BackButtonDelay::Left3 => validator.validate_delay(args.value, "Left::Third")?,
+                            gpd_linuxcontrols::enums::BackButtonDelay::Right1 => validator.validate_delay(args.value, "Right::First")?,
+                            gpd_linuxcontrols::enums::BackButtonDelay::Right2 => validator.validate_delay(args.value, "Right::Second")?,
+                            gpd_linuxcontrols::enums::BackButtonDelay::Right3 => validator.validate_delay(args.value, "Right::Third")?,
                         };
                     }
                 }
                 write_config(&device, config)?;
+                save(&device)?;
                 Ok(())
-            })().err().inspect(|e| {
-                error!("{}", e);
-                exit(1);
-            });
-        }
-        Commands::HIDUsageID => {
-            HIDUsageID::iter().for_each(|i| {
-                println!("{:32}{:#X}", format!("{:?}", i), <HIDUsageID as Into<u8>>::into(i))
-            })
-        }
-        Commands::Reset { reset_command } => {
-            (|| -> Result<(), String> {
+            }
+            Commands::HIDUsageID => panic!("should not reach!"),
+            Commands::Reset { reset_command } => {
                 let mut config = read_config(&device)?;
                 match reset_command {
                     ResetCommand::KeyboardMouse => {
@@ -153,33 +175,34 @@ fn main() {
                 write_config(&device, config)?;
                 save(&device)?;
                 Ok(())
-            })().err().inspect(|e| {
-                error!("{}", e);
-                exit(1);
-            });
-        }
-        Commands::Raw { raw_command } => {
-            match raw_command {
-                RawCommand::SetReport { data } => {
-                    let mut load: [u8; 33] = [0; 33];
-                    hex::decode_to_slice(data.trim_start_matches("0x"), &mut load as &mut [u8]).err().inspect(|e| {
-                        error!("{}", e);
-                        exit(1);
-                    });
-                    set_report(&device, load).err().inspect(|e| {
-                        error!("{}", e);
-                        exit(1);
-                    });
-                }
-                RawCommand::GetReport => {
-                    get_report(&device).map_or_else(|e| {
-                        error!("{}", e);
-                        exit(1);
-                    }, |v| {
-                        println!("{:#X}", <[u8; 65] as Into<LoadArray<65>>>::into(v))
-                    });
+            }
+            Commands::Raw { raw_command } => {
+                return match raw_command {
+                    RawCommand::SetReport { data } => {
+                        let mut load: [u8; 33] = [0; 33];
+                        hex::decode_to_slice(data.trim_start_matches("0x"), &mut load as &mut [u8]).map_err(|e| {
+                            return e.to_string();
+                        })?;
+                        set_report(&device, load).map_err(|e| {
+                            return e.to_string();
+                        })?;
+                        return Ok(());
+                    }
+                    RawCommand::GetReport => {
+                        get_report(&device).map(|v| -> () {
+                            println!("{:#X}", <[u8; 65] as Into<LoadArray<65>>>::into(v));
+                            return ();
+                        })?;
+                        return Ok(());
+                    }
                 }
             }
-        }
-    };
+        };
+    })().map_or_else(|e| -> i32 {
+        error!("{}", e);
+        1
+    }, |v| 0);
+
+    disconnect(device);
+    exit(code);
 }

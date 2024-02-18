@@ -58,7 +58,7 @@ pub fn write_command<T: UsbContext>(device: &DeviceHandle<T>, serial: WriteComma
             data[6]= minor.into();
         }
         WriteCommandMajorSerial::Major3 => {
-            data[2] = 23;
+            data[2] = 0x23;
             data[4] = 0xDC;
         }
     }

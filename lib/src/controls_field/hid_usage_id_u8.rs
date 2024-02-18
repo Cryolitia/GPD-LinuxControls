@@ -1,16 +1,14 @@
-use std::fmt;
-use std::fmt::Formatter;
+use clap::ValueEnum;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::de::Error;
+use serialize_display_adapter_macro_derive::SerializeDisplayAdapter;
 use crate::enums::hid_usage_id::HIDUsageID;
+use crate::parse_hex;
 
-#[derive(Copy, Clone, Default)]
+#[derive(Copy, Clone, Default, Debug, Eq, PartialEq, SerializeDisplayAdapter)]
+
 pub struct HIDUsageIDu8 {
     id: u8
-}
-
-impl fmt::Debug for HIDUsageIDu8 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", HIDUsageID::try_from(self.id).map_or_else(|e| format!("{:#X}", self.id), |v| format!("{:?}", v)))
-    }
 }
 
 impl From<u8> for HIDUsageIDu8 {
@@ -32,5 +30,31 @@ impl From<HIDUsageID> for HIDUsageIDu8 {
         HIDUsageIDu8 {
             id: value.into()
         }
+    }
+}
+
+impl Serialize for HIDUsageIDu8 {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+        match HIDUsageID::try_from(self.id) {
+            Ok(v) => {
+                v.serialize(serializer)
+            }
+            Err(e) => {
+                serializer.serialize_str(format!("{:#X}", self.id).as_str())
+            }
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for HIDUsageIDu8 {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+        let s = String::deserialize(deserializer)?;
+        return HIDUsageID::from_str(&s, true).map_or_else(|e| -> Result<Self, D::Error> {
+            return parse_hex(&s).or_else(|e| {
+                return Err(D::Error::custom(e))
+            })
+        }, |v| ->Result<Self, _> {
+            return Ok(v.into())
+        });
     }
 }

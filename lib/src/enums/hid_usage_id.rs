@@ -1,9 +1,12 @@
 use std::fmt::{Display, Formatter};
 use clap::ValueEnum;
 use num_enum::{TryFromPrimitive, IntoPrimitive};
+use serde::{Deserialize, Serialize};
 use strum_macros::EnumIter;
+use serialize_display_adapter_macro_derive::SerializeDisplayAdapter;
 
-#[derive(Copy, Clone, PartialEq, Eq, ValueEnum, Debug, TryFromPrimitive, IntoPrimitive, Default, EnumIter)]
+#[derive(Copy, Clone, PartialEq, Eq, ValueEnum, Debug, TryFromPrimitive, IntoPrimitive, Default, EnumIter, Serialize, Deserialize, SerializeDisplayAdapter)]
+#[serde(rename_all = "kebab-case")]
 #[repr(u8)]
 pub enum HIDUsageID {
     #[default]
