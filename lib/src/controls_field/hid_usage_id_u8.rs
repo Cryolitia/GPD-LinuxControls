@@ -1,14 +1,15 @@
 use clap::ValueEnum;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde::de::Error;
+
 use serialize_display_adapter_macro_derive::SerializeDisplayAdapter;
+
 use crate::enums::hid_usage_id::HIDUsageID;
 use crate::parse_hex;
 
 #[derive(Copy, Clone, Default, Debug, Eq, PartialEq, SerializeDisplayAdapter)]
-
 pub struct HIDUsageIDu8 {
-    id: u8
+    id: u8,
 }
 
 impl From<u8> for HIDUsageIDu8 {
@@ -39,7 +40,7 @@ impl Serialize for HIDUsageIDu8 {
             Ok(v) => {
                 v.serialize(serializer)
             }
-            Err(e) => {
+            Err(_) => {
                 serializer.serialize_str(format!("{:#X}", self.id).as_str())
             }
         }
@@ -49,12 +50,12 @@ impl Serialize for HIDUsageIDu8 {
 impl<'de> Deserialize<'de> for HIDUsageIDu8 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
         let s = String::deserialize(deserializer)?;
-        return HIDUsageID::from_str(&s, true).map_or_else(|e| -> Result<Self, D::Error> {
+        return HIDUsageID::from_str(&s, true).map_or_else(|_| -> Result<Self, D::Error> {
             return parse_hex(&s).or_else(|e| {
-                return Err(D::Error::custom(e))
-            })
-        }, |v| ->Result<Self, _> {
-            return Ok(v.into())
+                return Err(D::Error::custom(e));
+            });
+        }, |v| -> Result<Self, _> {
+            return Ok(v.into());
         });
     }
 }

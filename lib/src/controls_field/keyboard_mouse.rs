@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
+
 use serialize_display_adapter_macro_derive::SerializeDisplayAdapter;
+
 use crate::controls_field::hid_usage_id_u8::HIDUsageIDu8;
 
 #[derive(Debug, Copy, Clone, Default, Serialize, Deserialize, SerializeDisplayAdapter)]
@@ -11,10 +13,10 @@ pub struct KeyboardMouseConfig {
     pub x: HIDUsageIDu8,
     pub y: HIDUsageIDu8,
     pub left_stick: LeftStickConfig,
-    pub right_stick_push: HIDUsageIDu8
+    pub right_stick_push: HIDUsageIDu8,
 }
 
-#[derive(Debug,Copy, Clone, Default, Serialize, Deserialize, SerializeDisplayAdapter)]
+#[derive(Debug, Copy, Clone, Default, Serialize, Deserialize, SerializeDisplayAdapter)]
 #[serde(default)]
 pub struct DirectionalPadConfig {
     pub up: HIDUsageIDu8,

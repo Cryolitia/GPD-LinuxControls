@@ -1,7 +1,8 @@
-use std::fmt::{Formatter, UpperHex};
 use std::time::Duration;
+
 use log::debug;
 use rusb::{DeviceHandle, UsbContext};
+
 use crate::LoadArray;
 
 #[derive(Debug)]
@@ -31,7 +32,7 @@ pub fn set_report<T: UsbContext>(device: &DeviceHandle<T>, data: [u8; 33]) -> Re
     return device.write_control(SET_REPORT_HEADER.request_type, SET_REPORT_HEADER.request, SET_REPORT_HEADER.value, SET_REPORT_HEADER.index,
                                 &data, Duration::from_secs(1)).map_or_else(|e| {
         Err(e.to_string())
-    }, |v| {
+    }, |_| {
         Ok(())
     });
 }
@@ -41,7 +42,7 @@ pub fn get_report<T: UsbContext>(device: &DeviceHandle<T>) -> Result<[u8; 65], S
     return device.read_control(GET_REPORT_HEADER.request_type, GET_REPORT_HEADER.request, GET_REPORT_HEADER.value, GET_REPORT_HEADER.index,
                                &mut data, Duration::from_secs(1)).map_or_else(|e| {
         Err(e.to_string())
-    }, |v| {
+    }, |_| {
         debug!("GET_REPORT: {:X}", <[u8; 65] as Into<LoadArray<65>>>::into(data));
         Ok(data)
     });

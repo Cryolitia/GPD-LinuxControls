@@ -1,9 +1,9 @@
-use std::fmt;
-use std::fmt::{Display, Formatter, UpperHex};
+use std::fmt::{Formatter, UpperHex};
 use std::num::IntErrorKind;
-use serde::Serialize;
+
 use lazy_static::lazy_static;
 use regex::Regex;
+
 use crate::controls_field::hid_usage_id_u8::HIDUsageIDu8;
 use crate::Radix::{Decimal, Hexadecimal};
 
@@ -12,14 +12,14 @@ pub mod controls_field;
 pub mod protocol;
 
 pub struct LoadArray<const N: usize> {
-    value: [u8; N]
+    value: [u8; N],
 }
 
 impl<const N: usize> From<[u8; N]> for LoadArray<N> {
     fn from(value: [u8; N]) -> Self {
         return LoadArray {
             value
-        }
+        };
     }
 }
 

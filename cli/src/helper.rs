@@ -1,9 +1,8 @@
-use std::num::IntErrorKind;
 use colored::Colorize;
-use lazy_static::lazy_static;
 use log::warn;
-use regex::Regex;
+
 use gpd_linuxcontrols::controls_field::hid_usage_id_u8::HIDUsageIDu8;
+
 use crate::cli::HIDUsageIDArgs;
 
 impl From<HIDUsageIDArgs> for HIDUsageIDu8 {

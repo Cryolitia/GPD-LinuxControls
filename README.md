@@ -1,12 +1,14 @@
 # GPD LinuxControls
 
-This is a reverse engineered and reference implementation of GPD WinControls, developed and tested on GPD Win Max 2 2023.
+This is a reverse engineered and reference implementation of GPD WinControls, developed and tested on GPD Win Max 2
+2023.
 
 > [!CAUTION]
-> 
+>
 > This repository is the product of reverse engineering
 >
-> USB data frames sent to the device will be written **directly** to the EC ROM. Wrong speculation and implementation during the reverse engineering process may irreversibly destroy your device.
+> USB data frames sent to the device will be written **directly** to the EC ROM. Wrong speculation and implementation
+> during the reverse engineering process may irreversibly destroy your device.
 >
 > This repository and its contributors do not make any commitments, and **all consequences are at the user's own risk**.
 
@@ -20,7 +22,7 @@ This is a reverse engineered and reference implementation of GPD WinControls, de
 All request commands should be sent by `SET_REPORT`, and read the response by `GET_REPORT`.
 
 |               | SET_REPORT | GET_REPORT |
-| ------------- | ---------- | ---------- |
+|---------------|------------|------------|
 | bmRequestType | 0x21       | 0xa1       |
 | bRequest      | 0x09       | 0x01       |
 | wValue        | 0x0201     | 0x0101     |
@@ -29,9 +31,11 @@ All request commands should be sent by `SET_REPORT`, and read the response by `G
 
 ### Keyboard-Mouse
 
-Keyboard-Mouse follows [HID Usage ID](https://download.microsoft.com/download/1/6/1/161ba512-40e2-4cc9-843a-923143f3456c/translate.pdf)
+Keyboard-Mouse
+follows [HID Usage ID](https://download.microsoft.com/download/1/6/1/161ba512-40e2-4cc9-843a-923143f3456c/translate.pdf)
 
 In addition, there are GPD defined HID Usage ID extensions:
+
 - `0xE8`: Mouse_UP
 - `0xE9`: Mouse_Down
 

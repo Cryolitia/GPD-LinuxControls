@@ -1,22 +1,24 @@
-use std::fmt::{Debug, Display};
+use std::fmt::{Display};
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 use std::process::exit;
+
 use clap::Parser;
 use log::{debug, error};
-use gpd_linuxcontrols::protocol::{connect, disconnect};
-use gpd_linuxcontrols::protocol::function::{read_all, read_checksum, read_config, read_firmware_version, save, write_config};
 use strum::IntoEnumIterator;
+
 use gpd_linuxcontrols::controls_field::back_button::BackButtonConfig;
 use gpd_linuxcontrols::controls_field::ControlsConfig;
 use gpd_linuxcontrols::controls_field::dead_zones::DeadZonesConfig;
 use gpd_linuxcontrols::controls_field::keyboard_mouse::KeyboardMouseConfig;
 use gpd_linuxcontrols::enums::{BackButton, DeadZone};
 use gpd_linuxcontrols::LoadArray;
+use gpd_linuxcontrols::protocol::{connect, disconnect};
+use gpd_linuxcontrols::protocol::function::{read_all, read_checksum, read_config, read_firmware_version, save, write_config};
 use gpd_linuxcontrols::protocol::raw::{get_report, set_report};
 
-use crate::cli::{Commands, KeyboardMouseArgs, RawCommand, ReadCommand, ResetCommand, WriteCommand};
+use crate::cli::{Commands, RawCommand, ReadCommand, ResetCommand, WriteCommand};
 use crate::helper::RangeValidator;
 
 mod cli;
@@ -186,22 +188,22 @@ fn main() {
                         set_report(&device, load).map_err(|e| {
                             return e.to_string();
                         })?;
-                        return Ok(());
+                        Ok(())
                     }
                     RawCommand::GetReport => {
                         get_report(&device).map(|v| -> () {
                             println!("{:#X}", <[u8; 65] as Into<LoadArray<65>>>::into(v));
                             return ();
                         })?;
-                        return Ok(());
+                        Ok(())
                     }
-                }
+                };
             }
         };
     })().map_or_else(|e| -> i32 {
         error!("{}", e);
         1
-    }, |v| 0);
+    }, |_| 0);
 
     disconnect(device);
     exit(code);

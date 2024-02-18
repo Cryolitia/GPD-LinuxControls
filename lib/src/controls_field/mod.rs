@@ -1,6 +1,9 @@
-use std::fmt::{Debug, format, Formatter};
+use std::fmt::Debug;
+
 use serde::{Deserialize, Serialize, Serializer};
+
 use serialize_display_adapter_macro_derive::SerializeDisplayAdapter;
+
 use crate::controls_field::back_button::BackButtonConfig;
 use crate::controls_field::dead_zones::DeadZonesConfig;
 use crate::controls_field::keyboard_mouse::KeyboardMouseConfig;
@@ -23,26 +26,25 @@ pub struct ControlsField {
 
 #[derive(Copy, Clone, Debug, SerializeDisplayAdapter)]
 pub struct Checksum {
-    value: u64
+    value: u64,
 }
 
 impl From<u64> for Checksum {
     fn from(value: u64) -> Self {
         return Checksum {
             value
-        }
+        };
     }
 }
 
 impl Serialize for Checksum {
-
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
         serializer.serialize_str(format!("{:#X}", self.value).as_str())
     }
 }
 
 #[derive(Copy, Clone, Debug, Serialize, SerializeDisplayAdapter)]
-pub struct FirmwareVersion{
+pub struct FirmwareVersion {
     pub gamepad_firmware: Version,
     pub keyboard_mouse_firmware: Version,
 }
@@ -54,7 +56,6 @@ pub struct Version {
 }
 
 impl Serialize for Version {
-
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
         serializer.serialize_str(format!("{}.{}", self.major_version, self.minor_version).as_str())
     }
@@ -76,6 +77,6 @@ impl From<ControlsField> for ControlsConfig {
             back_button: value.back_button,
             vibrate: value.vibrate,
             dead_zones: value.dead_zones,
-        }
+        };
     }
 }

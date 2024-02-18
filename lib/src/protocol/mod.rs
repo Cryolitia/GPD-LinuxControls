@@ -1,10 +1,10 @@
-pub mod raw;
-pub mod command;
-pub mod function;
-
 use colored::Colorize;
 use log::warn;
 use rusb::{DeviceHandle, GlobalContext, UsbContext};
+
+pub mod raw;
+pub mod command;
+pub mod function;
 
 const VENDOR_ID: u16 = 0x2F24;
 const PRODUCT_ID: u16 = 0x0135;
@@ -31,7 +31,7 @@ fn process_kernel_driver<T: UsbContext>(device: &mut DeviceHandle<T>, attach_or_
             device.set_auto_detach_kernel_driver(true)?;
             let num = device.device().device_descriptor()?.num_configurations();
             (0..num).for_each(|i| {
-                device.device().config_descriptor(0).map_or_else(|e| {
+                device.device().config_descriptor(i).map_or_else(|e| {
                     warn!("{}", e)
                 }, |config| {
                     config.interfaces().for_each(|interface| {

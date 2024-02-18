@@ -1,12 +1,14 @@
 use serde::{Deserialize, Serialize};
+
 use serialize_display_adapter_macro_derive::SerializeDisplayAdapter;
+
 use crate::controls_field::hid_usage_id_u8::HIDUsageIDu8;
 
 #[derive(Debug, Copy, Clone, Default, Serialize, Deserialize, SerializeDisplayAdapter)]
 #[serde(default)]
 pub struct BackButtonConfig {
     pub left: SpecificBackButtonConfig,
-    pub right: SpecificBackButtonConfig
+    pub right: SpecificBackButtonConfig,
 }
 
 #[derive(Debug, Copy, Clone, Default, Serialize, Deserialize, SerializeDisplayAdapter)]

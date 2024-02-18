@@ -1,13 +1,13 @@
-use crate::controls_field::Checksum;
 use log::warn;
-use rusb::{Device, DeviceHandle, UsbContext};
+use rusb::{DeviceHandle, UsbContext};
+
 use crate::controls_field::{ControlsConfig, ControlsField, FirmwareVersion, Version};
 use crate::controls_field::back_button::{BackButtonConfig, SpecificBackButtonConfig};
+use crate::controls_field::Checksum;
 use crate::controls_field::dead_zones::{DeadZonesConfig, SpecificDeadZone};
-use crate::controls_field::hid_usage_id_u8::HIDUsageIDu8;
 use crate::controls_field::keyboard_mouse::{DirectionalPadConfig, KeyboardMouseConfig, LeftStickConfig};
 use crate::enums::Vibrate;
-use crate::enums::Vibrate::{Disable, Light};
+use crate::enums::Vibrate::Disable;
 use crate::protocol::command::{read_command, ReadCommandMajor1MinorSerial, ReadCommandMajorSerial, write_command, WriteCommandMajor1MinorSerial, WriteCommandMajorSerial};
 
 pub fn read_firmware_version<T: UsbContext>(device: &DeviceHandle<T>) -> Result<FirmwareVersion, String> {
@@ -21,7 +21,7 @@ pub fn read_firmware_version<T: UsbContext>(device: &DeviceHandle<T>) -> Result<
             major_version: load[11],
             minor_version: load[12],
         },
-    })
+    });
 }
 
 pub fn read_config<T: UsbContext>(device: &DeviceHandle<T>) -> Result<ControlsConfig, String> {
@@ -88,7 +88,7 @@ pub fn read_config<T: UsbContext>(device: &DeviceHandle<T>) -> Result<ControlsCo
 
 pub fn read_checksum<T: UsbContext>(device: &DeviceHandle<T>) -> Result<Checksum, String> {
     let load = read_command(device, ReadCommandMajorSerial::Major2)?;
-    return Ok(u64::from_be_bytes(<[u8; 8]>::try_from(&load[24..32]).map_err(|e| e.to_string())?).into())
+    return Ok(u64::from_be_bytes(<[u8; 8]>::try_from(&load[24..32]).map_err(|e| e.to_string())?).into());
 }
 
 pub fn read_all<T: UsbContext>(device: &DeviceHandle<T>) -> Result<ControlsField, String> {
@@ -100,10 +100,10 @@ pub fn read_all<T: UsbContext>(device: &DeviceHandle<T>) -> Result<ControlsField
         vibrate: config.vibrate,
         dead_zones: config.dead_zones,
         checksum: read_checksum(device)?.into(),
-    })
+    });
 }
 
-pub fn write_config<T: UsbContext>(device: &DeviceHandle<T>, config: ControlsConfig) -> Result<(),String> {
+pub fn write_config<T: UsbContext>(device: &DeviceHandle<T>, config: ControlsConfig) -> Result<(), String> {
     let mut load0 = [0u8; 25];
     let mut load1 = [0u8; 25];
     let mut load3 = [0u8; 25];

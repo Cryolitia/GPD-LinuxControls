@@ -1,9 +1,10 @@
 use clap::{Args, Parser, Subcommand};
 use clap_verbosity_flag::Verbosity;
-use gpd_linuxcontrols::parse_hex;
+
 use gpd_linuxcontrols::controls_field::hid_usage_id_u8::HIDUsageIDu8;
-use gpd_linuxcontrols::enums::hid_usage_id::HIDUsageID;
 use gpd_linuxcontrols::enums::{BackButton, BackButtonDelay, DeadZone, KeyboardMouse, Vibrate};
+use gpd_linuxcontrols::enums::hid_usage_id::HIDUsageID;
+use gpd_linuxcontrols::parse_hex;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -12,7 +13,7 @@ pub(crate) struct Cli {
     pub(crate) command: Commands,
 
     #[command(flatten)]
-    pub(crate) verbose: Verbosity
+    pub(crate) verbose: Verbosity,
 }
 
 #[derive(Subcommand, Debug, Eq, PartialEq)]
@@ -79,7 +80,7 @@ pub(crate) enum ResetCommand {
     KeyboardMouse,
     BackButton,
     DeadZone,
-    All
+    All,
 }
 
 #[derive(Subcommand, Debug, Eq, PartialEq)]
@@ -132,7 +133,7 @@ pub(crate) struct BackButtonArgs {
 
 #[derive(Parser, Debug, Eq, PartialEq)]
 pub(crate) struct VibrateArgs {
-    pub(crate) value: Vibrate
+    pub(crate) value: Vibrate,
 }
 
 #[derive(Parser, Debug, Eq, PartialEq)]

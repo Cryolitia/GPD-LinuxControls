@@ -1,8 +1,6 @@
-use std::fs::read;
-use clap::ValueEnum;
-use log::debug;
-use num_enum::{IntoPrimitive, TryFromPrimitive};
+use num_enum::IntoPrimitive;
 use rusb::{DeviceHandle, UsbContext};
+
 use crate::protocol::raw::{get_report, set_report};
 
 pub fn read_command<T: UsbContext>(device: &DeviceHandle<T>, serial: ReadCommandMajorSerial) -> Result<[u8; 65], String> {
@@ -46,7 +44,7 @@ pub enum ReadCommandMajor1MinorSerial {
     Minor3 = 3,
 }
 
-pub fn write_command<T: UsbContext>(device: &DeviceHandle<T>, serial: WriteCommandMajorSerial, load: [u8; 25]) -> Result<(),String> {
+pub fn write_command<T: UsbContext>(device: &DeviceHandle<T>, serial: WriteCommandMajorSerial, load: [u8; 25]) -> Result<(), String> {
     let mut data: [u8; 33] = [0; 33];
     data[0] = 0x01;
     data[1] = 0xA5;
@@ -55,7 +53,7 @@ pub fn write_command<T: UsbContext>(device: &DeviceHandle<T>, serial: WriteComma
         WriteCommandMajorSerial::Major1(minor) => {
             data[2] = 0x21;
             data[4] = 0xDE;
-            data[6]= minor.into();
+            data[6] = minor.into();
         }
         WriteCommandMajorSerial::Major3 => {
             data[2] = 0x23;

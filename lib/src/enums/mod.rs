@@ -1,6 +1,7 @@
 use clap::ValueEnum;
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 use serde::{Deserialize, Serialize};
+
 use serialize_display_adapter_macro_derive::SerializeDisplayAdapter;
 
 pub mod hid_usage_id;
