@@ -43,6 +43,11 @@ pub(crate) enum Commands {
         #[command(subcommand)]
         raw_command: RawCommand,
     },
+    #[command(about = "Detach and attach kernel driver")]
+    KernelDriver {
+        #[command(subcommand)]
+        kernel_driver_command: KernelDriverCommand
+    }
 }
 
 #[derive(Subcommand, Debug, Eq, PartialEq)]
@@ -91,6 +96,14 @@ pub(crate) enum RawCommand {
     },
     #[command(about = "Directly transfer raw data by GET_REPORT")]
     GetReport,
+}
+
+#[derive(Subcommand, Debug, Eq, PartialEq)]
+pub(crate) enum KernelDriverCommand {
+    #[command(about = "Detach kernel driver to solve 「Resource Busy」 fault")]
+    Detach,
+    #[command(about = "Attach kernel driver to use Keyboard-Mouse and Back Button")]
+    Attach,
 }
 
 #[derive(Args, Debug, Eq, PartialEq)]
