@@ -1,7 +1,6 @@
-use colored::Colorize;
-use log::warn;
-
+use gpd_linuxcontrols::colored::Colorize;
 use gpd_linuxcontrols::controls_field::hid_usage_id_u8::HIDUsageIDu8;
+use gpd_linuxcontrols::log::warn;
 
 use crate::cli::HIDUsageIDArgs;
 

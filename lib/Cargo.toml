@@ -11,13 +11,13 @@ license.workspace = true
 
 [dependencies]
 serialize_display_adapter_macro_derive = { path = "../serialize_display_adapter_macro_derive" }
-log.workspace = true
 serde_json.workspace = true
 clap.workspace = true
-regex.workspace = true
-strum.workspace = true
-lazy_static.workspace = true
-colored.workspace = true
+log = "0.4.20"
+regex = { version = "1.10.3", features = ["std", "logging", "perf"] }
+strum = { version = "0.26.1", features = ["strum_macros"] }
+lazy_static = "1.4.0"
+colored = "2.1.0"
 serde = { version = "1.0.196", features = ["derive"] }
 strum_macros = "0.26.1"
 num_enum = "0.7.2"

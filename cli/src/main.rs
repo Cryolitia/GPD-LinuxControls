@@ -5,8 +5,6 @@ use std::path::Path;
 use std::process::exit;
 
 use clap::Parser;
-use log::{debug, error};
-use strum::IntoEnumIterator;
 
 use gpd_linuxcontrols::controls_field::back_button::BackButtonConfig;
 use gpd_linuxcontrols::controls_field::ControlsConfig;
@@ -14,9 +12,11 @@ use gpd_linuxcontrols::controls_field::dead_zones::DeadZonesConfig;
 use gpd_linuxcontrols::controls_field::keyboard_mouse::KeyboardMouseConfig;
 use gpd_linuxcontrols::enums::{BackButton, DeadZone};
 use gpd_linuxcontrols::LoadArray;
-use gpd_linuxcontrols::protocol::{connect, disconnect, process_kernel_driver, unsafe_detach_kernel_driver};
+use gpd_linuxcontrols::log::{debug, error};
+use gpd_linuxcontrols::protocol::{connect, disconnect, find, unsafe_detach_kernel_driver};
 use gpd_linuxcontrols::protocol::function::{read_all, read_checksum, read_config, read_firmware_version, save, write_config};
 use gpd_linuxcontrols::protocol::raw::{get_report, set_report};
+use gpd_linuxcontrols::strum::IntoEnumIterator;
 
 use crate::cli::{Commands, KernelDriverCommand, RawCommand, ReadCommand, ResetCommand, WriteCommand};
 use crate::helper::RangeValidator;
@@ -28,6 +28,7 @@ fn main() {
     let args = cli::Cli::parse();
     let log_level = args.verbose.log_level_filter();
     env_logger::Builder::new().filter_level(log_level).init();
+    gpd_linuxcontrols::protocol::set_logger(log_level);
     debug!("{args:?}");
 
     if args.command == Commands::HIDUsageID {
@@ -37,7 +38,7 @@ fn main() {
         exit(0);
     }
 
-    let mut device = connect(log_level).unwrap_or_else(|error| {
+    let mut device = find().unwrap_or_else(|error| {
         error!("{}", error);
         exit(1);
     });
@@ -49,7 +50,7 @@ fn main() {
                     unsafe { unsafe_detach_kernel_driver(device) }
                 }
                 KernelDriverCommand::Attach => {
-                    process_kernel_driver(&mut device, true)?;
+                    connect(&mut device)?;
                     disconnect(device)?;
                     Ok(())
                 }
@@ -60,7 +61,7 @@ fn main() {
         }, |_| exit(0));
     } else {
         let code = (|| -> Result<(), String> {
-            process_kernel_driver(&mut device, true)?;
+            connect(&mut device)?;
             return match args.command {
                 Commands::Read { read_command } => {
                     return (|| -> Result<String, String> {

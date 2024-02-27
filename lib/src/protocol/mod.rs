@@ -1,6 +1,10 @@
+use std::ffi::{c_char, c_int, c_void, CStr};
+
 use colored::Colorize;
-use log::{LevelFilter, warn};
+use log::{debug, error, info, LevelFilter, warn};
 use rusb::{DeviceHandle, GlobalContext, LogLevel, UsbContext};
+use rusb::constants::{LIBUSB_LOG_CB_GLOBAL, LIBUSB_LOG_LEVEL_DEBUG, LIBUSB_LOG_LEVEL_ERROR, LIBUSB_LOG_LEVEL_INFO, LIBUSB_LOG_LEVEL_WARNING};
+use rusb::ffi::{libusb_context, libusb_set_log_cb};
 
 pub mod raw;
 pub mod command;
@@ -9,15 +13,7 @@ pub mod function;
 const VENDOR_ID: u16 = 0x2F24;
 const PRODUCT_ID: u16 = 0x0135;
 
-pub fn connect(log_level: LevelFilter) -> Result<DeviceHandle<GlobalContext>, String> {
-    rusb::set_log_level(match log_level {
-        LevelFilter::Off => LogLevel::None,
-        LevelFilter::Error => LogLevel::Error,
-        LevelFilter::Warn => LogLevel::Warning,
-        LevelFilter::Info => LogLevel::Info,
-        LevelFilter::Debug => LogLevel::Debug,
-        LevelFilter::Trace => LogLevel::Debug,
-    });
+pub fn find() -> Result<DeviceHandle<GlobalContext>, String> {
     return rusb::open_device_with_vid_pid(VENDOR_ID, PRODUCT_ID).map_or_else(|| {
         Err(format!("Could not find device with idVendor {} and idProduct {}\n\n{}\n\nOr apply udev rule {}", VENDOR_ID, PRODUCT_ID,
                     "Do you run as root or Administrator?".red().bold(),
@@ -30,7 +26,7 @@ pub fn connect(log_level: LevelFilter) -> Result<DeviceHandle<GlobalContext>, St
     });
 }
 
-pub fn process_kernel_driver<T: UsbContext>(device: &mut DeviceHandle<T>, attach_or_detach: bool) -> Result<(), String> {
+fn process_kernel_driver<T: UsbContext>(device: &mut DeviceHandle<T>, attach_or_detach: bool) -> Result<(), String> {
     return if rusb::supports_detach_kernel_driver() {
         (|| -> Result<(), rusb::Error> {
             device.set_auto_detach_kernel_driver(true)?;
@@ -53,7 +49,7 @@ pub fn process_kernel_driver<T: UsbContext>(device: &mut DeviceHandle<T>, attach
             return e.to_string();
         })
     } else {
-        Err("rusb: Not support detaching the kernel driver".to_string())
+        Err("libusb: Not support detaching the kernel driver".to_string())
     };
 }
 
@@ -75,10 +71,37 @@ pub unsafe fn unsafe_detach_kernel_driver<T: UsbContext>(mut device: DeviceHandl
             return e.to_string();
         })
     } else {
-        Err("rusb: Not support detaching the kernel driver".to_string())
+        Err("libusb: Not support detaching the kernel driver".to_string())
     };
+}
+
+pub fn connect<T: UsbContext>(device: &mut DeviceHandle<T>) -> Result<(), String> {
+    process_kernel_driver(device, true)
 }
 
 pub fn disconnect<T: UsbContext>(mut device: DeviceHandle<T>) -> Result<(), String> {
     process_kernel_driver(&mut device, false)
+}
+
+extern "system" fn static_log_callback(_: *mut libusb_context, level: c_int, text: *mut c_void) {
+    let message = (unsafe { CStr::from_ptr(text as *const c_char) }).to_str().unwrap_or("").to_owned();
+    match level {
+        LIBUSB_LOG_LEVEL_DEBUG => debug!("{}", message),
+        LIBUSB_LOG_LEVEL_INFO => info!("{}", message),
+        LIBUSB_LOG_LEVEL_WARNING => warn!("{}", message),
+        LIBUSB_LOG_LEVEL_ERROR => error!("{}", message),
+        _ => {}
+    }
+}
+
+pub fn set_logger(log_level: LevelFilter) {
+    rusb::set_log_level(match log_level {
+        LevelFilter::Off => LogLevel::None,
+        LevelFilter::Error => LogLevel::Error,
+        LevelFilter::Warn => LogLevel::Warning,
+        LevelFilter::Info => LogLevel::Info,
+        LevelFilter::Debug => LogLevel::Debug,
+        LevelFilter::Trace => LogLevel::Debug,
+    });
+    unsafe { libusb_set_log_cb(GlobalContext::default().as_raw(), Some(static_log_callback), LIBUSB_LOG_CB_GLOBAL) }
 }

@@ -185,15 +185,10 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "clap-verbosity-flag",
- "colored",
  "env_logger",
  "gpd_linuxcontrols",
  "hex",
- "lazy_static",
- "log",
- "regex",
  "serde_json",
- "strum",
 ]
 
 [[package]]

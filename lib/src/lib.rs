@@ -1,8 +1,12 @@
 use std::fmt::{Formatter, UpperHex};
 use std::num::IntErrorKind;
 
-use lazy_static::lazy_static;
+pub use colored;
+pub use lazy_static::lazy_static;
+pub use log;
+pub use regex;
 use regex::Regex;
+pub use strum;
 
 use crate::controls_field::hid_usage_id_u8::HIDUsageIDu8;
 use crate::Radix::{Decimal, Hexadecimal};
