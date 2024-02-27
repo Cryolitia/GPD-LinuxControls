@@ -1,5 +1,6 @@
 use clap::{Args, Parser, Subcommand};
 use clap_verbosity_flag::Verbosity;
+use clio::Input;
 
 use gpd_linuxcontrols::controls_field::hid_usage_id_u8::HIDUsageIDu8;
 use gpd_linuxcontrols::enums::{BackButton, BackButtonDelay, DeadZone, KeyboardMouse, Vibrate};
@@ -16,7 +17,7 @@ pub(crate) struct Cli {
     pub(crate) verbose: Verbosity,
 }
 
-#[derive(Subcommand, Debug, Eq, PartialEq)]
+#[derive(Subcommand, Debug)]
 pub(crate) enum Commands {
     #[command(about = "Read config field")]
     Read {
@@ -66,7 +67,7 @@ pub(crate) enum ReadCommand {
     Checksum,
 }
 
-#[derive(Subcommand, Debug, Eq, PartialEq)]
+#[derive(Subcommand, Debug)]
 pub(crate) enum WriteCommand {
     #[command(about = "Write configurable fields as JSON")]
     Config {
@@ -119,11 +120,11 @@ https://www.usb.org/sites/default/files/hut1_21_0.pdf")]
     pub(crate) name: Option<HIDUsageID>,
 }
 
-#[derive(Args, Debug, Eq, PartialEq)]
+#[derive(Args, Debug)]
 #[group(required = true, multiple = false)]
 pub(crate) struct ConfigJsonArgs {
-    #[arg(long, help = "Read JSON from a file")]
-    pub(crate) file: Option<String>,
+    #[arg(long, help = "Read JSON from a file, use '-' for stdin", value_parser, default_value = "-")]
+    pub(crate) file: Option<Input>,
 
     pub(crate) json: Option<String>,
 }

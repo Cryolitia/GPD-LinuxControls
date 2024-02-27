@@ -1,7 +1,5 @@
 use std::fmt::Display;
-use std::fs::File;
 use std::io::Read;
-use std::path::Path;
 use std::process::exit;
 
 use clap::Parser;
@@ -31,7 +29,7 @@ fn main() {
     gpd_linuxcontrols::protocol::set_logger(log_level);
     debug!("{args:?}");
 
-    if args.command == Commands::HIDUsageID {
+    if matches!(args.command, Commands::HIDUsageID) {
         gpd_linuxcontrols::enums::hid_usage_id::HIDUsageID::iter().for_each(|i| {
             println!("{:32}{:#X}", i.to_string(), <gpd_linuxcontrols::enums::hid_usage_id::HIDUsageID as Into<u8>>::into(i))
         });
@@ -105,12 +103,13 @@ fn main() {
                             args.json.inspect(|v| {
                                 str = v.to_owned();
                             });
-                            args.file.map(|v| -> Result<(), String> {
-                                File::open(Path::new(&v)).map_err(|e| -> String { e.to_string() })?.read_to_string(&mut str).map_err(|e| -> String { e.to_string() })?;
+                            args.file.map(|mut v| -> Result<(), String> {
+                                v.read_to_string(&mut str).map_err(|e| e.to_string())?;
                                 Ok(())
                             }).unwrap_or(Ok(()))?;
+                            debug!("read: {}", str);
                             config = serde_json::from_str(&str).map_err(|e| -> String { e.to_string() })?;
-                            debug!("Deserialized: {}", config);
+                            debug!("deserialized: {}", config);
                             validator.validate_dead_zones(config.dead_zones.left.border, "Left::Border")?;
                             validator.validate_dead_zones(config.dead_zones.left.center, "Left::Border")?;
                             validator.validate_dead_zones(config.dead_zones.right.border, "Right::Border")?;
