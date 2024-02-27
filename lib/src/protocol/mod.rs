@@ -49,7 +49,8 @@ fn process_kernel_driver<T: UsbContext>(device: &mut DeviceHandle<T>, attach_or_
             return e.to_string();
         })
     } else {
-        Err("libusb: Not support detaching the kernel driver".to_string())
+        info!("libusb: Not support detaching the kernel driver");
+        return Ok(())
     };
 }
 
@@ -71,7 +72,8 @@ pub unsafe fn unsafe_detach_kernel_driver<T: UsbContext>(mut device: DeviceHandl
             return e.to_string();
         })
     } else {
-        Err("libusb: Not support detaching the kernel driver".to_string())
+        info!("libusb: Not support detaching the kernel driver");
+        return Ok(())
     };
 }
 
