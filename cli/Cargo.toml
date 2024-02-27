@@ -1,23 +1,22 @@
 [package]
 name = "gpd_linuxcontrols_cli"
+categories = ["command-line-utilities", "hardware-support"]
 version = "0.1.0"
 edition = "2021"
-authors = ["Cryolitia <Cryolitia@gmail.com>"]
-description = "A reverse engineered and reference implementation of GPD WinControls"
-homepage = "https://github.com/Cryolitia/GPD-LinuxControls"
-repository = "https://github.com/Cryolitia/GPD-LinuxControls"
-license = "MIT"
-categories = ["command-line-utilities", "hardware-support"]
+authors.workspace = true
+homepage.workspace = true
+repository.workspace = true
+license.workspace = true
 
 [dependencies]
 gpd_linuxcontrols = { path = "../lib" }
-clap = { version = "4.4.18", features = ["derive"] }
+log.workspace = true
+serde_json.workspace = true
+clap.workspace = true
+regex.workspace = true
+strum.workspace = true
+lazy_static.workspace = true
+colored.workspace = true
 clap-verbosity-flag = "2.1.2"
 env_logger = "0.11.1"
-log = "0.4.20"
-regex = { version = "1.10.3", features = ["std", "logging", "perf"] }
-lazy_static = "1.4.0"
-strum = "0.26.1"
 hex = "0.4.3"
-colored = "2.1.0"
-serde_json = "1.0.113"

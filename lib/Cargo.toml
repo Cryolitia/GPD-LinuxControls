@@ -1,24 +1,24 @@
 [package]
 name = "gpd_linuxcontrols"
-version = "0.1.0"
-edition = "2021"
-authors = ["Cryolitia <Cryolitia@gmail.com>"]
-description = "A reverse engineered and reference implementation of GPD WinControls"
-homepage = "https://github.com/Cryolitia/GPD-LinuxControls"
-repository = "https://github.com/Cryolitia/GPD-LinuxControls"
-license = "MIT"
 categories = ["hardware-support"]
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+description.workspace = true
+homepage.workspace = true
+repository.workspace = true
+license.workspace = true
 
 [dependencies]
-log = "0.4.20"
+serialize_display_adapter_macro_derive = { path = "../serialize_display_adapter_macro_derive" }
+log.workspace = true
+serde_json.workspace = true
+clap.workspace = true
+regex.workspace = true
+strum.workspace = true
+lazy_static.workspace = true
+colored.workspace = true
+serde = { version = "1.0.196", features = ["derive"] }
+strum_macros = "0.26.1"
 num_enum = "0.7.2"
 rusb = "0.9.3"
-clap = "4.5.0"
-strum = { version = "0.26.1", features = ["strum_macros"] }
-strum_macros = "0.26.1"
-colored = "2.1.0"
-serde = { version = "1.0.196", features = ["derive"] }
-serde_json = "1.0.113"
-serialize_display_adapter_macro_derive = { path = "../serialize_display_adapter_macro_derive" }
-lazy_static = "1.4.0"
-regex = "1.10.3"
