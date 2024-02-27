@@ -98,15 +98,9 @@ fn main() {
                         force
                     };
                     match write_command {
-                        WriteCommand::Config { args } => {
+                        WriteCommand::Config { mut file } => {
                             let mut str: String = Default::default();
-                            args.json.inspect(|v| {
-                                str = v.to_owned();
-                            });
-                            args.file.map(|mut v| -> Result<(), String> {
-                                v.read_to_string(&mut str).map_err(|e| e.to_string())?;
-                                Ok(())
-                            }).unwrap_or(Ok(()))?;
+                            file.read_to_string(&mut str).map_err(|e| e.to_string())?;
                             debug!("read: {}", str);
                             config = serde_json::from_str(&str).map_err(|e| -> String { e.to_string() })?;
                             debug!("deserialized: {}", config);

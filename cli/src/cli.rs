@@ -71,8 +71,8 @@ pub(crate) enum ReadCommand {
 pub(crate) enum WriteCommand {
     #[command(about = "Write configurable fields as JSON")]
     Config {
-        #[command(flatten)]
-        args: ConfigJsonArgs
+        #[arg(long, help = "Read JSON from a file, use '-' for stdin", value_parser)]
+        file: Input,
     },
     KeyboardMouse(KeyboardMouseArgs),
     BackButton(BackButtonArgs),
@@ -118,15 +118,6 @@ https://www.usb.org/sites/default/files/hut1_21_0.pdf")]
 
     #[arg(long_help = "USB HID Usage ID by name , see details with --help")]
     pub(crate) name: Option<HIDUsageID>,
-}
-
-#[derive(Args, Debug)]
-#[group(required = true, multiple = false)]
-pub(crate) struct ConfigJsonArgs {
-    #[arg(long, help = "Read JSON from a file, use '-' for stdin", value_parser, default_value = "-")]
-    pub(crate) file: Option<Input>,
-
-    pub(crate) json: Option<String>,
 }
 
 #[derive(Parser, Debug, Eq, PartialEq)]
