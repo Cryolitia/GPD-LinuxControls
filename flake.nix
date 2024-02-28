@@ -119,6 +119,12 @@
 
                 postInstall = ''
                   install -Dm644 42-gpd-controls.rules $out/lib/udev/rules.d/42-gpd-controls.rules
+
+                  $out/bin/gpd-controls gen --path $out/share/man/man1/ man
+                  $out/bin/gpd-controls gen --path $out/share/zsh/site-functions/ complete zsh
+                  $out/bin/gpd-controls gen --path $out/share/bash-completion/completions/ complete bash
+                  $out/bin/gpd-controls gen --path $out/share/fish/vendor_completions.d/ complete fish
+                  # TODO: elvish https://github.com/elves/elvish/issues/1004
                 '';
 
                 meta = with lib; {
@@ -126,7 +132,7 @@
                   homepage = "https://github.com/Cryolitia/GPD-LinuxControls";
                   license = licenses.mit;
                   maintainers = with maintainers; [ Cryolitia ];
-                  mainProgram = "gpd_linuxcontrols_cli";
+                  mainProgram = "gpd-controls";
                 };
               }
             )

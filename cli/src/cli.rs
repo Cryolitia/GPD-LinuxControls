@@ -1,6 +1,7 @@
 use clap::{Args, Parser, Subcommand};
+use clap_complete::Shell;
 use clap_verbosity_flag::Verbosity;
-use clio::Input;
+use clio::{ClioPath, Input};
 
 use gpd_linuxcontrols::controls_field::hid_usage_id_u8::HIDUsageIDu8;
 use gpd_linuxcontrols::enums::{BackButton, BackButtonDelay, DeadZone, KeyboardMouse, Vibrate};
@@ -8,8 +9,8 @@ use gpd_linuxcontrols::enums::hid_usage_id::HIDUsageID;
 use gpd_linuxcontrols::parse_hex;
 
 #[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
-pub(crate) struct Cli {
+#[command(author, version, about, long_about = None, display_name = "gpd-controls")]
+pub struct Cli {
     #[command(subcommand)]
     pub(crate) command: Commands,
 
@@ -48,7 +49,14 @@ pub(crate) enum Commands {
     KernelDriver {
         #[command(subcommand)]
         kernel_driver_command: KernelDriverCommand
-    }
+    },
+    #[command(about = "Generate manual or shell auto complete file", hide = true)]
+    Gen {
+        #[command(subcommand)]
+        gen_command: GenCommand,
+        #[arg(help = "Output Path", long)]
+        path: ClioPath,
+    },
 }
 
 #[derive(Subcommand, Debug, Eq, PartialEq)]
@@ -105,6 +113,16 @@ pub(crate) enum KernelDriverCommand {
     Detach,
     #[command(about = "Attach kernel driver to use Keyboard-Mouse and Back Button")]
     Attach,
+}
+
+#[derive(Subcommand, Debug, Eq, PartialEq)]
+pub(crate) enum GenCommand {
+    #[command(about = "Generate manual file")]
+    Man,
+    #[command(about = "Generate shell auto complete file")]
+    Complete {
+        args: Shell
+    },
 }
 
 #[derive(Args, Debug, Eq, PartialEq)]

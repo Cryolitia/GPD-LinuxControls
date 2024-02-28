@@ -1,8 +1,9 @@
 use std::fmt::Display;
+use std::fs::create_dir_all;
 use std::io::Read;
 use std::process::exit;
 
-use clap::Parser;
+use clap::{CommandFactory, Parser};
 
 use gpd_linuxcontrols::controls_field::back_button::BackButtonConfig;
 use gpd_linuxcontrols::controls_field::ControlsConfig;
@@ -16,7 +17,7 @@ use gpd_linuxcontrols::protocol::function::{read_all, read_checksum, read_config
 use gpd_linuxcontrols::protocol::raw::{get_report, set_report};
 use gpd_linuxcontrols::strum::IntoEnumIterator;
 
-use crate::cli::{Commands, KernelDriverCommand, RawCommand, ReadCommand, ResetCommand, WriteCommand};
+use crate::cli::{Cli, Commands, GenCommand, KernelDriverCommand, RawCommand, ReadCommand, ResetCommand, WriteCommand};
 use crate::helper::RangeValidator;
 
 mod cli;
@@ -29,11 +30,42 @@ fn main() {
     gpd_linuxcontrols::protocol::set_logger(log_level);
     debug!("{args:?}");
 
-    if matches!(args.command, Commands::HIDUsageID) {
-        gpd_linuxcontrols::enums::hid_usage_id::HIDUsageID::iter().for_each(|i| {
-            println!("{:32}{:#X}", i.to_string(), <gpd_linuxcontrols::enums::hid_usage_id::HIDUsageID as Into<u8>>::into(i))
-        });
-        exit(0);
+    match args.command {
+        Commands::HIDUsageID => {
+            gpd_linuxcontrols::enums::hid_usage_id::HIDUsageID::iter().for_each(|i| {
+                println!("{:32}{:#X}", i.to_string(), <gpd_linuxcontrols::enums::hid_usage_id::HIDUsageID as Into<u8>>::into(i))
+            });
+            exit(0);
+        }
+        Commands::Gen { gen_command, path } => {
+            (|| -> Result<(), String> {
+                let out_dir = path.to_path_buf();
+                let cmd = Cli::command();
+                debug!("man: generate to{:?}", out_dir);
+                create_dir_all(&out_dir).map_err(|e| e.to_string())?;
+
+                match gen_command {
+                    GenCommand::Man => {
+                        clap_mangen::generate_to(Cli::command(), out_dir).map_err(|e| e.to_string())?;
+                    }
+                    GenCommand::Complete { args } => {
+                        let name = cmd
+                            .get_display_name()
+                            .unwrap_or_else(|| cmd.get_name());
+                        clap_complete::generate_to(args, &mut Cli::command(), name, &out_dir).err().inspect(|e| {
+                            error!("{}", e);
+                            exit(1);
+                        });
+                    }
+                }
+                Ok(())
+            })().err().inspect(|e| {
+                error!("{}", e);
+                exit(1);
+            });
+            exit(0);
+        }
+        _ => {}
     }
 
     let mut device = find().unwrap_or_else(|error| {
