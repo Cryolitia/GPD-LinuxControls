@@ -85,7 +85,7 @@
 
         in
         {
-          gpd-linux-controls = pkgs.callPackage
+          default = pkgs.callPackage
             (
               { lib
               , rust-bin
@@ -103,7 +103,7 @@
                 pname = "gpd-linux-controls";
                 version = "unstable";
 
-                src = ./.;
+                src = lib.cleanSource ./.;
 
                 cargoLock = {
                   lockFile = ./Cargo.lock;
