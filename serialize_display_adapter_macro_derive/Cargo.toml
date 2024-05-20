@@ -2,6 +2,8 @@
 name = "serialize_display_adapter_macro_derive"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+description = "Automatically impl Display for struct that implementated serde::Serialize"
 
 [lib]
 proc-macro = true
