@@ -1,8 +1,10 @@
 [package]
 name = "serialize_display_adapter_macro_derive"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 license = "MIT"
+authors = ["Cryolitia <Cryolitia@gmail.com>"]
+homepage = "https://github.com/Cryolitia/GPD-LinuxControls/tree/main/serialize_display_adapter_macro_derive"
 description = "Automatically impl Display for struct that implementated serde::Serialize"
 
 [lib]

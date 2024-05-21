@@ -525,7 +525,7 @@ dependencies = [
 
 [[package]]
 name = "serialize_display_adapter_macro_derive"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "quote",
  "syn",
