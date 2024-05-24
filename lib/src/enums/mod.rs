@@ -36,7 +36,20 @@ pub enum BackButton {
     Right4,
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, ValueEnum, Debug, TryFromPrimitive, IntoPrimitive, Default, Serialize, Deserialize, SerializeDisplayAdapter)]
+#[derive(
+    Copy,
+    Clone,
+    PartialEq,
+    Eq,
+    ValueEnum,
+    Debug,
+    TryFromPrimitive,
+    IntoPrimitive,
+    Default,
+    Serialize,
+    Deserialize,
+    SerializeDisplayAdapter,
+)]
 #[serde(rename_all = "kebab-case")]
 #[repr(u8)]
 pub enum Vibrate {

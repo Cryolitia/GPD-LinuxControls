@@ -1,18 +1,25 @@
 use log::warn;
 use rusb::{DeviceHandle, UsbContext};
 
-use crate::controls_field::{ControlsConfig, ControlsField, FirmwareVersion, Version};
 use crate::controls_field::back_button::{BackButtonConfig, SpecificBackButtonConfig};
-use crate::controls_field::Checksum;
 use crate::controls_field::dead_zones::{DeadZonesConfig, SpecificDeadZone};
-use crate::controls_field::keyboard_mouse::{DirectionalPadConfig, KeyboardMouseConfig, LeftStickConfig};
+use crate::controls_field::keyboard_mouse::{
+    DirectionalPadConfig, KeyboardMouseConfig, LeftStickConfig,
+};
+use crate::controls_field::Checksum;
+use crate::controls_field::{ControlsConfig, ControlsField, FirmwareVersion, Version};
 use crate::enums::Vibrate;
 use crate::enums::Vibrate::Disable;
-use crate::protocol::command::{read_command, ReadCommandMajor1MinorSerial, ReadCommandMajorSerial, write_command, WriteCommandMajor1MinorSerial, WriteCommandMajorSerial};
+use crate::protocol::command::{
+    read_command, write_command, ReadCommandMajor1MinorSerial, ReadCommandMajorSerial,
+    WriteCommandMajor1MinorSerial, WriteCommandMajorSerial,
+};
 
-pub fn read_firmware_version<T: UsbContext>(device: &DeviceHandle<T>) -> Result<FirmwareVersion, String> {
+pub fn read_firmware_version<T: UsbContext>(
+    device: &DeviceHandle<T>,
+) -> Result<FirmwareVersion, String> {
     let load = read_command(device, ReadCommandMajorSerial::Major0)?;
-    return Ok(FirmwareVersion {
+    Ok(FirmwareVersion {
         gamepad_firmware: Version {
             major_version: load[9],
             minor_version: load[10],
@@ -21,13 +28,19 @@ pub fn read_firmware_version<T: UsbContext>(device: &DeviceHandle<T>) -> Result<
             major_version: load[11],
             minor_version: load[12],
         },
-    });
+    })
 }
 
 pub fn read_config<T: UsbContext>(device: &DeviceHandle<T>) -> Result<ControlsConfig, String> {
-    let load0 = read_command(device, ReadCommandMajorSerial::Major1(ReadCommandMajor1MinorSerial::Minor0))?;
-    let load1 = read_command(device, ReadCommandMajorSerial::Major1(ReadCommandMajor1MinorSerial::Minor1))?;
-    return Ok(ControlsConfig {
+    let load0 = read_command(
+        device,
+        ReadCommandMajorSerial::Major1(ReadCommandMajor1MinorSerial::Minor0),
+    )?;
+    let load1 = read_command(
+        device,
+        ReadCommandMajorSerial::Major1(ReadCommandMajor1MinorSerial::Minor1),
+    )?;
+    Ok(ControlsConfig {
         keyboard_mouse: KeyboardMouseConfig {
             directional_pad: DirectionalPadConfig {
                 up: load0[0].into(),
@@ -71,7 +84,7 @@ pub fn read_config<T: UsbContext>(device: &DeviceHandle<T>) -> Result<ControlsCo
         vibrate: Vibrate::try_from(load1[2]).unwrap_or_else(|e| {
             warn!("{}", e);
             warn!("Vibrate field is set to Vibrate::Disable");
-            return Disable;
+            Disable
         }),
         dead_zones: DeadZonesConfig {
             left: SpecificDeadZone {
@@ -83,27 +96,30 @@ pub fn read_config<T: UsbContext>(device: &DeviceHandle<T>) -> Result<ControlsCo
                 border: load1[11] as i8,
             },
         },
-    });
+    })
 }
 
 pub fn read_checksum<T: UsbContext>(device: &DeviceHandle<T>) -> Result<Checksum, String> {
     let load = read_command(device, ReadCommandMajorSerial::Major2)?;
-    return Ok(u64::from_be_bytes(<[u8; 8]>::try_from(&load[24..32]).map_err(|e| e.to_string())?).into());
+    Ok(u64::from_be_bytes(<[u8; 8]>::try_from(&load[24..32]).map_err(|e| e.to_string())?).into())
 }
 
 pub fn read_all<T: UsbContext>(device: &DeviceHandle<T>) -> Result<ControlsField, String> {
     let config = read_config(device)?;
-    return Ok(ControlsField {
+    Ok(ControlsField {
         firmware_version: read_firmware_version(device)?,
         keyboard_mouse: config.keyboard_mouse,
         back_button: config.back_button,
         vibrate: config.vibrate,
         dead_zones: config.dead_zones,
-        checksum: read_checksum(device)?.into(),
-    });
+        checksum: read_checksum(device)?,
+    })
 }
 
-pub fn write_config<T: UsbContext>(device: &DeviceHandle<T>, config: ControlsConfig) -> Result<(), String> {
+pub fn write_config<T: UsbContext>(
+    device: &DeviceHandle<T>,
+    config: ControlsConfig,
+) -> Result<(), String> {
     let mut load0 = [0u8; 25];
     let mut load1 = [0u8; 25];
     let mut load3 = [0u8; 25];
@@ -141,21 +157,41 @@ pub fn write_config<T: UsbContext>(device: &DeviceHandle<T>, config: ControlsCon
     load4[10] = config.dead_zones.right.center as u8;
     load4[11] = config.dead_zones.right.border as u8;
 
-    load5[0] = config.back_button.left.first_delay.into();
-    load5[2] = config.back_button.left.second_delay.into();
-    load5[4] = config.back_button.left.third_delay.into();
-    load5[8] = config.back_button.right.first_delay.into();
-    load5[10] = config.back_button.right.second_delay.into();
-    load5[12] = config.back_button.right.third_delay.into();
+    load5[0] = config.back_button.left.first_delay;
+    load5[2] = config.back_button.left.second_delay;
+    load5[4] = config.back_button.left.third_delay;
+    load5[8] = config.back_button.right.first_delay;
+    load5[10] = config.back_button.right.second_delay;
+    load5[12] = config.back_button.right.third_delay;
 
-    write_command(device, WriteCommandMajorSerial::Major1(WriteCommandMajor1MinorSerial::Minor0), load0)?;
-    write_command(device, WriteCommandMajorSerial::Major1(WriteCommandMajor1MinorSerial::Minor1), load1)?;
-    write_command(device, WriteCommandMajorSerial::Major1(WriteCommandMajor1MinorSerial::Minor3), load3)?;
-    write_command(device, WriteCommandMajorSerial::Major1(WriteCommandMajor1MinorSerial::Minor4), load4)?;
-    write_command(device, WriteCommandMajorSerial::Major1(WriteCommandMajor1MinorSerial::Minor5), load4)?;
-    return Ok(());
+    write_command(
+        device,
+        WriteCommandMajorSerial::Major1(WriteCommandMajor1MinorSerial::Minor0),
+        load0,
+    )?;
+    write_command(
+        device,
+        WriteCommandMajorSerial::Major1(WriteCommandMajor1MinorSerial::Minor1),
+        load1,
+    )?;
+    write_command(
+        device,
+        WriteCommandMajorSerial::Major1(WriteCommandMajor1MinorSerial::Minor3),
+        load3,
+    )?;
+    write_command(
+        device,
+        WriteCommandMajorSerial::Major1(WriteCommandMajor1MinorSerial::Minor4),
+        load4,
+    )?;
+    write_command(
+        device,
+        WriteCommandMajorSerial::Major1(WriteCommandMajor1MinorSerial::Minor5),
+        load4,
+    )?;
+    Ok(())
 }
 
 pub fn save<T: UsbContext>(device: &DeviceHandle<T>) -> Result<(), String> {
-    return write_command(device, WriteCommandMajorSerial::Major3, [0u8; 25]);
+    write_command(device, WriteCommandMajorSerial::Major3, [0u8; 25])
 }

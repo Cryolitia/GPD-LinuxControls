@@ -4,8 +4,8 @@ use clap_verbosity_flag::Verbosity;
 use clio::{ClioPath, Input};
 
 use gpd_linuxcontrols::controls_field::hid_usage_id_u8::HIDUsageIDu8;
-use gpd_linuxcontrols::enums::{BackButton, BackButtonDelay, DeadZone, KeyboardMouse, Vibrate};
 use gpd_linuxcontrols::enums::hid_usage_id::HIDUsageID;
+use gpd_linuxcontrols::enums::{BackButton, BackButtonDelay, DeadZone, KeyboardMouse, Vibrate};
 use gpd_linuxcontrols::parse_hex;
 
 #[derive(Parser, Debug)]
@@ -30,7 +30,11 @@ pub(crate) enum Commands {
         #[command(subcommand)]
         write_command: WriteCommand,
 
-        #[arg(long, global = true, help = "Ignore value legality check and force write")]
+        #[arg(
+            long,
+            global = true,
+            help = "Ignore value legality check and force write"
+        )]
         force: bool,
     },
     #[command(about = "Print HID Usage ID table")]
@@ -48,7 +52,7 @@ pub(crate) enum Commands {
     #[command(about = "Detach and attach kernel driver")]
     KernelDriver {
         #[command(subcommand)]
-        kernel_driver_command: KernelDriverCommand
+        kernel_driver_command: KernelDriverCommand,
     },
     #[command(about = "Generate manual or shell auto complete file", hide = true)]
     Gen {
@@ -100,9 +104,7 @@ pub(crate) enum ResetCommand {
 #[derive(Subcommand, Debug, Eq, PartialEq)]
 pub(crate) enum RawCommand {
     #[command(about = "Directly transfer raw data by SET_REPORT")]
-    SetReport {
-        data: String
-    },
+    SetReport { data: String },
     #[command(about = "Directly transfer raw data by GET_REPORT")]
     GetReport,
 }
@@ -120,9 +122,7 @@ pub(crate) enum GenCommand {
     #[command(about = "Generate manual file")]
     Man,
     #[command(about = "Generate shell auto complete file")]
-    Complete {
-        args: Shell
-    },
+    Complete { args: Shell },
 }
 
 #[derive(Args, Debug, Eq, PartialEq)]

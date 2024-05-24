@@ -3,7 +3,10 @@ use rusb::{DeviceHandle, UsbContext};
 
 use crate::protocol::raw::{get_report, set_report};
 
-pub fn read_command<T: UsbContext>(device: &DeviceHandle<T>, serial: ReadCommandMajorSerial) -> Result<[u8; 65], String> {
+pub fn read_command<T: UsbContext>(
+    device: &DeviceHandle<T>,
+    serial: ReadCommandMajorSerial,
+) -> Result<[u8; 65], String> {
     let mut data: [u8; 33] = [0; 33];
     data[0] = 0x01;
     data[1] = 0xA5;
@@ -24,7 +27,7 @@ pub fn read_command<T: UsbContext>(device: &DeviceHandle<T>, serial: ReadCommand
         }
     }
     set_report(device, data)?;
-    return get_report(device);
+    get_report(device)
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
@@ -44,7 +47,11 @@ pub enum ReadCommandMajor1MinorSerial {
     Minor3 = 3,
 }
 
-pub fn write_command<T: UsbContext>(device: &DeviceHandle<T>, serial: WriteCommandMajorSerial, load: [u8; 25]) -> Result<(), String> {
+pub fn write_command<T: UsbContext>(
+    device: &DeviceHandle<T>,
+    serial: WriteCommandMajorSerial,
+    load: [u8; 25],
+) -> Result<(), String> {
     let mut data: [u8; 33] = [0; 33];
     data[0] = 0x01;
     data[1] = 0xA5;

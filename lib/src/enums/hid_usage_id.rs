@@ -5,7 +5,21 @@ use strum_macros::EnumIter;
 
 use serialize_display_adapter_macro_derive::SerializeDisplayAdapter;
 
-#[derive(Copy, Clone, PartialEq, Eq, ValueEnum, Debug, TryFromPrimitive, IntoPrimitive, Default, EnumIter, Serialize, Deserialize, SerializeDisplayAdapter)]
+#[derive(
+    Copy,
+    Clone,
+    PartialEq,
+    Eq,
+    ValueEnum,
+    Debug,
+    TryFromPrimitive,
+    IntoPrimitive,
+    Default,
+    EnumIter,
+    Serialize,
+    Deserialize,
+    SerializeDisplayAdapter,
+)]
 #[serde(rename_all = "kebab-case")]
 #[repr(u8)]
 pub enum HIDUsageID {

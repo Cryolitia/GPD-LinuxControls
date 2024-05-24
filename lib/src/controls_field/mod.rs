@@ -9,10 +9,10 @@ use crate::controls_field::dead_zones::DeadZonesConfig;
 use crate::controls_field::keyboard_mouse::KeyboardMouseConfig;
 use crate::enums::Vibrate;
 
-pub mod keyboard_mouse;
 pub mod back_button;
 pub mod dead_zones;
 pub mod hid_usage_id_u8;
+pub mod keyboard_mouse;
 
 #[derive(Copy, Clone, Debug, Serialize, SerializeDisplayAdapter)]
 pub struct ControlsField {
@@ -31,14 +31,15 @@ pub struct Checksum {
 
 impl From<u64> for Checksum {
     fn from(value: u64) -> Self {
-        return Checksum {
-            value
-        };
+        Checksum { value }
     }
 }
 
 impl Serialize for Checksum {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
         serializer.serialize_str(format!("{:#X}", self.value).as_str())
     }
 }
@@ -56,7 +57,10 @@ pub struct Version {
 }
 
 impl Serialize for Version {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
         serializer.serialize_str(format!("{}.{}", self.major_version, self.minor_version).as_str())
     }
 }
@@ -72,11 +76,11 @@ pub struct ControlsConfig {
 
 impl From<ControlsField> for ControlsConfig {
     fn from(value: ControlsField) -> Self {
-        return ControlsConfig {
+        ControlsConfig {
             keyboard_mouse: value.keyboard_mouse,
             back_button: value.back_button,
             vibrate: value.vibrate,
             dead_zones: value.dead_zones,
-        };
+        }
     }
 }

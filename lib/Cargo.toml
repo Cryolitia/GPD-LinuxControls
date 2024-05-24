@@ -18,7 +18,7 @@ regex = { version = "1.10.3", features = ["std", "logging", "perf"] }
 strum = { version = "0.26.1", features = ["strum_macros"] }
 lazy_static = "1.4.0"
 colored = "2.1.0"
-serde = { version = "1.0.196", features = ["derive"] }
+serde.workspace = true
 strum_macros = "0.26.1"
 num_enum = "0.7.2"
 rusb = "0.9.3"

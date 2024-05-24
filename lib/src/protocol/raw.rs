@@ -28,22 +28,41 @@ const GET_REPORT_HEADER: ReportHeader = ReportHeader {
 };
 
 pub fn set_report<T: UsbContext>(device: &DeviceHandle<T>, data: [u8; 33]) -> Result<(), String> {
-    debug!("SET_REPORT: {:#X}", <[u8; 33] as Into<LoadArray<33>>>::into(data));
-    return device.write_control(SET_REPORT_HEADER.request_type, SET_REPORT_HEADER.request, SET_REPORT_HEADER.value, SET_REPORT_HEADER.index,
-                                &data, Duration::from_secs(1)).map_or_else(|e| {
-        Err(e.to_string())
-    }, |_| {
-        Ok(())
-    });
+    debug!(
+        "SET_REPORT: {:#X}",
+        <[u8; 33] as Into<LoadArray<33>>>::into(data)
+    );
+    device
+        .write_control(
+            SET_REPORT_HEADER.request_type,
+            SET_REPORT_HEADER.request,
+            SET_REPORT_HEADER.value,
+            SET_REPORT_HEADER.index,
+            &data,
+            Duration::from_secs(1),
+        )
+        .map_or_else(|e| Err(e.to_string()), |_| Ok(()))
 }
 
 pub fn get_report<T: UsbContext>(device: &DeviceHandle<T>) -> Result<[u8; 65], String> {
     let mut data: [u8; 65] = [0; 65];
-    return device.read_control(GET_REPORT_HEADER.request_type, GET_REPORT_HEADER.request, GET_REPORT_HEADER.value, GET_REPORT_HEADER.index,
-                               &mut data, Duration::from_secs(1)).map_or_else(|e| {
-        Err(e.to_string())
-    }, |_| {
-        debug!("GET_REPORT: {:X}", <[u8; 65] as Into<LoadArray<65>>>::into(data));
-        Ok(data)
-    });
+    device
+        .read_control(
+            GET_REPORT_HEADER.request_type,
+            GET_REPORT_HEADER.request,
+            GET_REPORT_HEADER.value,
+            GET_REPORT_HEADER.index,
+            &mut data,
+            Duration::from_secs(1),
+        )
+        .map_or_else(
+            |e| Err(e.to_string()),
+            |_| {
+                debug!(
+                    "GET_REPORT: {:X}",
+                    <[u8; 65] as Into<LoadArray<65>>>::into(data)
+                );
+                Ok(data)
+            },
+        )
 }

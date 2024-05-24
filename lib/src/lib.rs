@@ -11,8 +11,8 @@ pub use strum;
 use crate::controls_field::hid_usage_id_u8::HIDUsageIDu8;
 use crate::Radix::{Decimal, Hexadecimal};
 
-pub mod enums;
 pub mod controls_field;
+pub mod enums;
 pub mod protocol;
 
 pub struct LoadArray<const N: usize> {
@@ -21,18 +21,18 @@ pub struct LoadArray<const N: usize> {
 
 impl<const N: usize> From<[u8; N]> for LoadArray<N> {
     fn from(value: [u8; N]) -> Self {
-        return LoadArray {
-            value
-        };
+        LoadArray { value }
     }
 }
 
 impl<const N: usize> UpperHex for LoadArray<N> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let a: String = self.value.iter().map(|i| {
-            format!("{:02X}", i).to_string() + " "
-        }).collect();
-        return write!(f, "{}", a);
+        let a: String = self
+            .value
+            .iter()
+            .map(|i| format!("{:02X}", i).to_string() + " ")
+            .collect();
+        write!(f, "{}", a)
     }
 }
 
@@ -57,20 +57,28 @@ pub fn parse_hex(s: &str) -> Result<HIDUsageIDu8, String> {
 }
 
 fn u8_from_str_radix(s: &str, n: Radix) -> Result<HIDUsageIDu8, String> {
-    return match u8::from_str_radix(s, match n {
-        Radix::Decimal => 10,
-        Radix::Hexadecimal => 16
-    }) {
+    return match u8::from_str_radix(
+        s,
+        match n {
+            Radix::Decimal => 10,
+            Radix::Hexadecimal => 16,
+        },
+    ) {
         Ok(n) => Ok(n.into()),
         Err(e) => match e.kind() {
-            IntErrorKind::PosOverflow | IntErrorKind::NegOverflow => Err(format!("{} is not in {}..={}", s, match n {
-                Decimal => "0",
-                Hexadecimal => "0x00"
-            }, match n {
-                Decimal => "255",
-                Hexadecimal => "0xFF"
-            })),
-            _ => Err(e.to_string())
-        }
+            IntErrorKind::PosOverflow | IntErrorKind::NegOverflow => Err(format!(
+                "{} is not in {}..={}",
+                s,
+                match n {
+                    Decimal => "0",
+                    Hexadecimal => "0x00",
+                },
+                match n {
+                    Decimal => "255",
+                    Hexadecimal => "0xFF",
+                }
+            )),
+            _ => Err(e.to_string()),
+        },
     };
 }

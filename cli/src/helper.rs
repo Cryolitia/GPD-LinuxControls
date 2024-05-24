@@ -26,7 +26,12 @@ impl RangeValidator {
             warn!("Dead zones value {} for field DeadZones::{} not in range -10..=10, continue with {}", value, field, "--force".italic());
             return Ok(value);
         }
-        return Err(format!("Dead zones value {} for field DeadZones::{} not in range -10..=10, use {} to continue", value, field, "--force".italic()));
+        Err(format!(
+            "Dead zones value {} for field DeadZones::{} not in range -10..=10, use {} to continue",
+            value,
+            field,
+            "--force".italic()
+        ))
     }
 
     pub(crate) fn validate_delay(&self, value: u8, field: &str) -> Result<u8, String> {
@@ -37,6 +42,6 @@ impl RangeValidator {
             warn!("Dead zones value {} for field BackButton::{}Delay not 0(0x00) or 100(0x64), continue with {}", value, field, "--force".italic());
             return Ok(value);
         }
-        return Err(format!("Dead zones value {} for field BackButton::{}Delay not 0(0x00) or 100(0x64), use {} to continue", value, field, "--force".italic()));
+        Err(format!("Dead zones value {} for field BackButton::{}Delay not 0(0x00) or 100(0x64), use {} to continue", value, field, "--force".italic()))
     }
 }
