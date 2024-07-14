@@ -1,6 +1,6 @@
 [package]
 name = "serialize_display_adapter_macro_derive"
-version = "0.1.3"
+version = "0.2.0"
 edition = "2021"
 license = "MIT"
 authors = ["Cryolitia <Cryolitia@gmail.com>"]

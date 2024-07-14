@@ -2,7 +2,7 @@ use std::fmt::Debug;
 
 use serde::{Deserialize, Serialize, Serializer};
 
-use serialize_display_adapter_macro_derive::SerializeDisplayAdapter;
+use serialize_display_adapter_macro_derive::PrettyJsonSerializeDisplayAdapter;
 
 use crate::controls_field::back_button::BackButtonConfig;
 use crate::controls_field::dead_zones::DeadZonesConfig;
@@ -14,7 +14,7 @@ pub mod dead_zones;
 pub mod hid_usage_id_u8;
 pub mod keyboard_mouse;
 
-#[derive(Copy, Clone, Debug, Serialize, SerializeDisplayAdapter)]
+#[derive(Copy, Clone, Debug, Serialize, PrettyJsonSerializeDisplayAdapter)]
 pub struct ControlsField {
     pub firmware_version: FirmwareVersion,
     pub keyboard_mouse: KeyboardMouseConfig,
@@ -24,7 +24,7 @@ pub struct ControlsField {
     pub checksum: Checksum,
 }
 
-#[derive(Copy, Clone, Debug, SerializeDisplayAdapter)]
+#[derive(Copy, Clone, Debug, PrettyJsonSerializeDisplayAdapter)]
 pub struct Checksum {
     value: u64,
 }
@@ -44,13 +44,13 @@ impl Serialize for Checksum {
     }
 }
 
-#[derive(Copy, Clone, Debug, Serialize, SerializeDisplayAdapter)]
+#[derive(Copy, Clone, Debug, Serialize, PrettyJsonSerializeDisplayAdapter)]
 pub struct FirmwareVersion {
     pub gamepad_firmware: Version,
     pub keyboard_mouse_firmware: Version,
 }
 
-#[derive(Copy, Clone, Debug, SerializeDisplayAdapter)]
+#[derive(Copy, Clone, Debug, PrettyJsonSerializeDisplayAdapter)]
 pub struct Version {
     pub major_version: u8,
     pub minor_version: u8,
@@ -65,7 +65,9 @@ impl Serialize for Version {
     }
 }
 
-#[derive(Copy, Clone, Debug, Default, Serialize, Deserialize, SerializeDisplayAdapter)]
+#[derive(
+    Copy, Clone, Debug, Default, Serialize, Deserialize, PrettyJsonSerializeDisplayAdapter,
+)]
 #[serde(default)]
 pub struct ControlsConfig {
     pub keyboard_mouse: KeyboardMouseConfig,

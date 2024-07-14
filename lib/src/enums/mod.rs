@@ -2,7 +2,7 @@ use clap::ValueEnum;
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 use serde::{Deserialize, Serialize};
 
-use serialize_display_adapter_macro_derive::SerializeDisplayAdapter;
+use serialize_display_adapter_macro_derive::PrettyJsonSerializeDisplayAdapter;
 
 pub mod hid_usage_id;
 
@@ -48,7 +48,7 @@ pub enum BackButton {
     Default,
     Serialize,
     Deserialize,
-    SerializeDisplayAdapter,
+    PrettyJsonSerializeDisplayAdapter,
 )]
 #[serde(rename_all = "kebab-case")]
 #[repr(u8)]

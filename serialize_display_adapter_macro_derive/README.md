@@ -2,9 +2,9 @@
 
 ```rust
 use serde::Serialize;
-use serialize_display_adapter_macro_derive::SerializeDisplayAdapter;
+use serialize_display_adapter_macro_derive::PrettyJsonSerializeDisplayAdapter;
 
-#[derive(Serialize, SerializeDisplayAdapter)]
+#[derive(Serialize, PrettyJsonSerializeDisplayAdapter)]
 struct Demo<'a> {
     name: &'a str,
     age: u8,

@@ -3,7 +3,7 @@ use num_enum::{IntoPrimitive, TryFromPrimitive};
 use serde::{Deserialize, Serialize};
 use strum_macros::EnumIter;
 
-use serialize_display_adapter_macro_derive::SerializeDisplayAdapter;
+use serialize_display_adapter_macro_derive::PrettyJsonSerializeDisplayAdapter;
 
 #[derive(
     Copy,
@@ -18,7 +18,7 @@ use serialize_display_adapter_macro_derive::SerializeDisplayAdapter;
     EnumIter,
     Serialize,
     Deserialize,
-    SerializeDisplayAdapter,
+    PrettyJsonSerializeDisplayAdapter,
 )]
 #[serde(rename_all = "kebab-case")]
 #[repr(u8)]

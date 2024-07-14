@@ -2,12 +2,12 @@ use clap::ValueEnum;
 use serde::de::Error;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-use serialize_display_adapter_macro_derive::SerializeDisplayAdapter;
+use serialize_display_adapter_macro_derive::PrettyJsonSerializeDisplayAdapter;
 
 use crate::enums::hid_usage_id::HIDUsageID;
 use crate::parse_hex;
 
-#[derive(Copy, Clone, Default, Debug, Eq, PartialEq, SerializeDisplayAdapter)]
+#[derive(Copy, Clone, Default, Debug, Eq, PartialEq, PrettyJsonSerializeDisplayAdapter)]
 pub struct HIDUsageIDu8 {
     id: u8,
 }
